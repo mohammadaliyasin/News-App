@@ -1,51 +1,30 @@
 import 'dart:convert';
-import 'dart:math';
-import 'package:http/http.dart';
-import '../model/newsArt.dart';
+import 'package:http/http.dart' as http;
+import 'package:news_app/api_key.dart';
+import 'package:news_app/model/NewsArt.dart';
 
 class FetchNews {
-  static List sourcesId = [
-    "abc-news",
-    "bbc-news",
-    "bbc-sport",
-    "business-insider",
-    "engadget",
-    "entertainment-weekly",
-    "espn",
-    "espn-cric-info",
-    "financial-post",
-    "fox-news",
-    "fox-sports",
-    "globo",
-    "google-news",
-    "google-news-in",
-    "medical-news-today",
-    "national-geographic",
-    "news24",
-    "new-scientist",
-    "new-york-magazine",
-    "next-big-future",
-    "techcrunch",
-    "techradar",
-    "the-hindu",
-    "the-wall-street-journal",
-    "the-washington-times",
-    "time",
-    "usa-today",
-  ];
+  static const String _apiUrl = 'https://newsapi.org/v2/everything?q=tesla&from=2024-08-27&sortBy=publishedAt&apiKey=$apiKey';
 
-  static Future<NewsArt> fetchNews() async {
-    final _random = new Random();
-    var sourceID = sourcesId[_random.nextInt(sourcesId.length)];
-    Response response = await get(
-      Uri.parse(
-        "https://newsapi.org/v2/top-headlines?sources=$sourceID&apiKey=8e899c28db4042b4b9cb45187764b01f",
-      ),
-    );
-    Map body_data = jsonDecode(response.body);
-    List articles = body_data["articles"];
-    final Newrandom = new Random();
-    var myArticle = articles[_random.nextInt(articles.length)];
-    return NewsArt.fromAPItoApp(myArticle);
+  static Future<NewsArt?> fetchNews() async {
+    try {
+      final response = await http.get(Uri.parse(_apiUrl));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        if (data['articles'] != null && data['articles'].isNotEmpty) {
+          return NewsArt.fromJson(data['articles'][0]);
+        } else {
+          print('No articles found');
+          return null;
+        }
+      } else {
+        print('Failed to load news: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching news: $e');
+      return null;
+    }
   }
 }

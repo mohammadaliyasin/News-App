@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:news_app/controller/FetchNews.dart';
 import '../Widget/NewsContainer.dart';
-import '../controller/FetchNews.dart';
 import '../model/NewsArt.dart';
 
 class NewsHomeScreen extends StatefulWidget {
@@ -14,50 +14,65 @@ class NewsHomeScreen extends StatefulWidget {
 class _NewsHomeScreenState extends State<NewsHomeScreen> {
   NewsArt? newsArt;
   bool isLoading = true;
-  Future<void> GetNews() async {
-    try {
-      newsArt = await FetchNews.fetchNews() as NewsArt?;
-      setState(() {
-        isLoading = true;
-      });
-    } catch (e) {
-      print('Error fetching news: $e');
-    }
-  }
 
   @override
   void initState() {
     super.initState();
-    GetNews();
+    fetchNews();
+  }
+
+  Future<void> fetchNews() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      newsArt = await FetchNews.fetchNews();
+    } catch (e) {
+      print('Error fetching news: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor: Colors.black,
-      // ),
       body: PageView.builder(
         controller: PageController(initialPage: 0),
-        scrollDirection: Axis.vertical,
+        scrollDirection: Axis.horizontal,
         onPageChanged: (value) {
-          setState(() {
-            isLoading = true;
-          });
-          GetNews();
+          fetchNews();
         },
         itemBuilder: (context, index) {
-          isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : NewsContainer(
-                  imageUrl: newsArt!.imgUrl,
-                  newsHead: newsArt!.newsHead,
-                  newsCnt: newsArt!.newsCnt,
-                  newsDesc: newsArt!.newsDesc,
-                  newsUrl: newsArt!.newsUrl,
-                );
+          if (isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (newsArt != null) {
+            return NewsContainer(
+              imageUrl: newsArt!.urlToImage ?? '',
+              newsHead: newsArt!.title ?? '',
+              newsCnt: newsArt!.content ?? '',
+              newsDesc: newsArt!.description ?? '',
+              newsUrl: newsArt!.url ?? '',
+              publishedAt: newsArt!.publishedAt ?? '',
+              authername: newsArt!.author ?? '',
+            );
+          } else {
+            return Center(
+              child: Text(
+                'No news available',
+                style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.blueAccent,
+                    fontStyle: FontStyle.normal,
+                    fontWeight: FontWeight.w400),
+              ),
+            );
+          }
         },
       ),
     );

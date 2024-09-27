@@ -1,26 +1,29 @@
 class NewsArt {
-  String imgUrl;
-  String newsHead;
-  String newsDesc;
-  String newsCnt;
-  String newsUrl;
+  final String? author;
+  final String? title;
+  final String? description;
+  final String? url;
+  final String? urlToImage;
+  final String? publishedAt;
+  final String? content;
 
   NewsArt({
-    required this.imgUrl,
-    required this.newsHead,
-    required this.newsDesc,
-    required this.newsCnt,
-    required this.newsUrl,
+   required this.author,
+   required this.title,
+   required this.description,
+   required this.url,
+   required this.urlToImage,
+   required this.publishedAt,
+   required this.content,
   });
 
-  static NewsArt fromAPItoApp(Map<String, dynamic> article) {
-    return NewsArt(
-        imgUrl: article['urlToImage'] ??
-            "https://img.freepik.com/free-vector/breaking-news-concept_23-2148514216.jpg?w=2000",
-        newsHead: article["title"] ?? "--",
-        newsDesc: article["description"] ?? "--",
-        newsCnt: article["content"] ?? "--",
-        newsUrl: article["url"] ??
-            "https://news.google.com/topstories?hl=en-IN&gl=IN&ceid=IN:en");
-  }
+  NewsArt.fromJson(Map<String, dynamic> json)
+      : author = json['author'],
+        title = json['title'],
+        description = json['description'],
+        url = json['url'],
+        urlToImage = json['urlToImage'],
+        publishedAt = json['publishedAt'],
+        content = json['content'];
 }
+
